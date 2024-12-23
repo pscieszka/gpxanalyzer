@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa z listą współrzędnych</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-gpx@1.7.0/dist/leaflet-gpx.js"></script> <!-- Leaflet GPX plugin -->
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<h1>Mapa z listą współrzędnych</h1>
+
+<div id="map"></div>
+
+<script>
+    // Przekazywanie danych z Thymeleaf do JavaScript
+    var coordinates = [[${coordinates}]]
+
+    console.log(coordinates);  // Sprawdź dane w konsoli
+
+    // Sprawdzamy, czy dane zostały poprawnie przekazane
+    if (coordinates && coordinates.length > 0) {
+        // Inicjalizacja mapy na podstawie pierwszego punktu
+        var map = L.map('map').setView([coordinates[0][0], coordinates[0][1]], 13);
+
+        // Dodanie warstwy mapy (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Tworzenie tablicy współrzędnych do rysowania śladu (polyline)
+        var latlngs = coordinates.map(function(coord) {
+            return [coord[0], coord[1]];
+        });
+
+        // Dodanie śladu (polyline) na mapie
+        var polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map);
+
+        // Dopasowanie mapy do widocznych punktów
+        map.fitBounds(polyline.getBounds());
+    } else {
+        console.log("Brak danych współrzędnych");
+    }
+</script>
+
+</body>
+</html>
