@@ -1,5 +1,7 @@
 package com.example.gpxanalyzer.ParsingDataState;
 
-interface ParsingState<T> {
-    T handle(String data);
+import org.w3c.dom.*;
+
+public interface ParsingState<T> {
+    T handle(Document data);
 }

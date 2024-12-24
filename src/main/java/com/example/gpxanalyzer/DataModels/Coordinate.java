@@ -1,4 +1,4 @@
-package com.example.gpxanalyzer;
+package com.example.gpxanalyzer.DataModels;
 
 public class Coordinate {
 
