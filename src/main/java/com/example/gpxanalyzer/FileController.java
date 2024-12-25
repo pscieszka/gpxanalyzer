@@ -1,16 +1,14 @@
 package com.example.gpxanalyzer;
 
-import com.example.gpxanalyzer.DataModels.Coordinate;
-import com.example.gpxanalyzer.FileTypesStrategies.FileParsingStrategy;
-import com.example.gpxanalyzer.FileTypesStrategies.FileParsingStrategyFactory;
-import com.example.gpxanalyzer.FileTypesStrategies.GpxParsingStrategy;
-import com.example.gpxanalyzer.ParsingDataState.CoordinateState;
-import com.example.gpxanalyzer.ParsingDataState.ParsingState;
+import com.example.gpxanalyzer.DataModels.ParsedData;
+import com.example.gpxanalyzer.FileTypesStrategies.FileParser;
+import com.example.gpxanalyzer.FileTypesStrategies.FileParserFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -26,17 +24,12 @@ public class FileController {
 
         String filename = file.getOriginalFilename();
 
-        FileParsingStrategy strategy = FileParsingStrategyFactory.getStrategy(filename);
-        ParsingState<List<Coordinate>> coordinateState = new CoordinateState();
-        InputStream inputStream = file.getInputStream();
-        List<Coordinate> coordinateData = coordinateState.handle(strategy.parseFile(inputStream));
-        List<List<Double>> coordinates = coordinateData.stream().collect(ArrayList::new, (list, coordinate) -> {
-            list.add(Arrays.asList(coordinate.getLatitude(), coordinate.getLongitude()));
-        }, ArrayList::addAll);
+        FileParser strategy = FileParserFactory.getParser(filename);
+        ParsedData data = strategy.parseFile(file.getInputStream());
 
 
-        // Przekazanie danych JSON do widoku
-        model.addAttribute("coordinates", coordinates);
+        model.addAttribute("coordinates", data.getCoordinates());
+        model.addAttribute("heartRate", data.getHeartRates());
 
         return "map"; // Nazwa szablonu Thymeleaf
     }

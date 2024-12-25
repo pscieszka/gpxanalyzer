@@ -1,22 +1,20 @@
 package com.example.gpxanalyzer.FileTypesStrategies;
 
+import com.example.gpxanalyzer.DataModels.ParsedData;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 import java.io.InputStream;
 
-public class GpxParsingStrategy implements FileParsingStrategy {
+public class TcxParser implements FileParser {
     @Override
-    public Document parseFile(InputStream inputStream) throws ParserConfigurationException, IOException, SAXException {
+    public ParsedData parseFile(InputStream inputStream) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
 
-            return builder.parse(inputStream);
+            return new ParsedData();
         }
         catch (Exception e) {
             e.printStackTrace();

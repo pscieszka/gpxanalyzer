@@ -6,11 +6,16 @@
     <title>Mapa z listą współrzędnych</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-gpx@1.7.0/dist/leaflet-gpx.js"></script> <!-- Leaflet GPX plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Dodaj Chart.js -->
     <style>
         #map {
             height: 500px;
             width: 100%;
+        }
+        #chartContainer {
+            width: 50%;  /* Wykres na połowie strony (po lewej) */
+            float: left;
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -19,34 +24,83 @@
 
 <div id="map"></div>
 
+<div id="chartContainer">
+    <canvas id="heartRateChart"></canvas>  <!-- Kontener na wykres -->
+</div>
+
 <script>
     // Przekazywanie danych z Thymeleaf do JavaScript
-    var coordinates = [[${coordinates}]]
+    var coordinates = [[${coordinates}]];
+    var heartRateData = [[${heartRate}]];  // Dane tętna
 
-    console.log(coordinates);  // Sprawdź dane w konsoli
+    console.log(heartRateData);  // Sprawdź dane w konsoli
 
-    // Sprawdzamy, czy dane zostały poprawnie przekazane
+    // Inicjalizacja mapy
     if (coordinates && coordinates.length > 0) {
-        // Inicjalizacja mapy na podstawie pierwszego punktu
         var map = L.map('map').setView([coordinates[0][0], coordinates[0][1]], 13);
 
-        // Dodanie warstwy mapy (OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Tworzenie tablicy współrzędnych do rysowania śladu (polyline)
         var latlngs = coordinates.map(function(coord) {
             return [coord[0], coord[1]];
         });
 
-        // Dodanie śladu (polyline) na mapie
         var polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map);
-
-        // Dopasowanie mapy do widocznych punktów
         map.fitBounds(polyline.getBounds());
     } else {
         console.log("Brak danych współrzędnych");
+    }
+
+    // Oblicz minimalne i maksymalne tętno
+    if (heartRateData && heartRateData.length > 0) {
+        var minHR = Math.min(...heartRateData);
+        var maxHR = Math.max(...heartRateData);
+        var yMin = minHR - 15;
+        var yMax = maxHR + 15;
+
+        var ctx = document.getElementById('heartRateChart').getContext('2d');
+
+        var heartRateChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: heartRateData.length}, (_, i) => i + 1),  // Próbki (1, 2, 3...)
+                datasets: [{
+                    label: 'Tętno (bpm)',
+                    data: heartRateData,
+                    borderColor: 'red',  // Czerwona linia
+                    borderWidth: 2,
+                    pointRadius: 0,  // Usuń punkciki
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',  // Cieniowanie pod wykresem
+                    fill: true,
+                    tension: 0.4  // Płynność krzywej
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false  // Ukryj legendę
+                    }
+                },
+                scales: {
+                    x: {
+                        display: false  // Ukryj oś X
+                    },
+                    y: {
+                        min: yMin,
+                        max: yMax,
+                        title: {
+                            display: true,
+                            text: 'Tętno (bpm)'
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        console.log("Brak danych tętna");
     }
 </script>
 
