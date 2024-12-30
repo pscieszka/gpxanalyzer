@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,11 +26,15 @@ public class GpxParser implements FileParser {
             NodeList trkpts = document.getElementsByTagName("trkpt");
             List<List<Double>> coordinates = new ArrayList<>();
             List<Integer> heartRates = new ArrayList<>();
-
+            List<Double> elevationList = new ArrayList<>();
+            List<Integer> times = new ArrayList<>();
             for (int i = 0; i < trkpts.getLength(); i++) {
                 Element trkpt = (Element) trkpts.item(i);
                 double lat = Double.parseDouble(trkpt.getAttribute("lat"));
                 double lon = Double.parseDouble(trkpt.getAttribute("lon"));
+                Instant instant = Instant.parse(trkpt.getElementsByTagName("time").item(0).getTextContent());
+                Element element = (Element) trkpt.getElementsByTagName("ele").item(0);
+                double elevation = Double.parseDouble(element.getTextContent());
                 NodeList extensions = trkpt.getElementsByTagName("extensions");
                 if (extensions.getLength() > 0) {
                     Element extension = (Element) extensions.item(0);
@@ -44,9 +49,16 @@ public class GpxParser implements FileParser {
                 coordinate.add(lat);
                 coordinate.add(lon);
                 coordinates.add(coordinate);
+                elevationList.add(elevation);
+
+                int time = (int) instant.getEpochSecond();
+                times.add(time);
+
+
+
             }
 
-            return new ParsedData(coordinates, heartRates);
+            return new ParsedData(coordinates, heartRates, elevationList, times);
         }
         catch (Exception e) {
             e.printStackTrace();

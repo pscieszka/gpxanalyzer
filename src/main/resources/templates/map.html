@@ -6,38 +6,232 @@
     <title>Mapa z listą współrzędnych</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Dodaj Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        #map {
-            height: 500px;
-            width: 100%;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
         }
+
+        #container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        #info {
+            width: 25%;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            width: 70%;
+            height: 300px;
+            border-radius: 10px;
+        }
+
+        #scrollTableContainer {
+            height: 400px;
+            overflow-y: auto;
+            margin-right: 20px;
+            width: 40%
+        }
+
+        #paceTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #paceTable th, #paceTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #paceTable th {
+            background-color: #f4f4f4;
+            position: sticky;
+            top: 0;
+        }
+
         #chartContainer {
-            width: 50%;  /* Wykres na połowie strony (po lewej) */
-            float: left;
-            margin: 20px 0;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+
+        }
+
+        .chart {
+            width: 60%;
+            height: 400px;
+            min-height: 300px;
+            background-color: #f4f4f4;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .toggle-buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .toggle-buttons label {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+
+        .toggle-slider {
+            width: 50px;
+            height: 24px;
+            background-color: #ccc;
+            border-radius: 50px;
+            margin-left: 10px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-slider:before {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: white;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        input[type="checkbox"]:checked + .toggle-slider {
+            background-color: #4CAF50;
+        }
+
+        input[type="checkbox"]:checked + .toggle-slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
 <body>
-<h1>Mapa z listą współrzędnych</h1>
-
-<div id="map"></div>
-
-<div id="chartContainer">
-    <canvas id="heartRateChart"></canvas>  <!-- Kontener na wykres -->
+<div id="container">
+    <div id="info">
+        <h3>Info</h3>
+        <p><strong>Time:</strong>  <span th:text="${totalTimeInString}"></span>
+        <p><strong>Distance:</strong> <span th:text="${totalDistance} + ' km'"></span>
+        <p><strong>Elevation gain:</strong> <span th:text="${elevationGain} + ' m'"></span></p>
+        <p><strong>Heart Rate:</strong> <span th:text="${averageHeartRate} + ' bpm'"></span></p>
+        <p><strong>Pace:</strong> <span th:text="${averagePace} + ' min/km'"></span></p>
+        <p><strong>Gap pace:</strong> <span th:text="${averageGapPace} + ' min/km'"></span></p>
+    </div>
+    <div id="map"></div>
 </div>
 
+<div id="chartContainer">
+    <div id="scrollTableContainer">
+        <table id="paceTable">
+            <thead>
+            <tr>
+                <th>Km</th>
+                <th>Tempo (min/km)</th>
+                <th>Gap Pace (min/km)</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="chart">
+        <canvas id="paceChart"></canvas>
+    </div>
+</div>
+
+<div class="toggle-buttons">
+    <label>
+        Tempo (min/km)
+        <input type="checkbox" id="togglePace" checked>
+        <span class="toggle-slider"></span>
+    </label>
+    <label>
+        Wysokość (m)
+        <input type="checkbox" id="toggleElevation" checked>
+        <span class="toggle-slider"></span>
+    </label>
+    <label>
+        Tętno (bpm)
+        <input type="checkbox" id="toggleHR">
+        <span class="toggle-slider"></span>
+    </label>
+    <label>
+        GAP Pace
+        <input type="checkbox" id="toggleGapPace">
+        <span class="toggle-slider"></span>
+    </label>
+    <label>
+        MA10 PACE
+        <input type="checkbox" id="toggleMAPace">
+        <span class="toggle-slider"></span>
+    </label>
+    <label>
+        MA10  gap PACE
+        <input type="checkbox" id="toggleMAGapPace">
+        <span class="toggle-slider"></span>
+    </label>
+</div>
+
+
 <script>
-    // Przekazywanie danych z Thymeleaf do JavaScript
+
+    //info
+    var averagePace = "${averagePace}";
+    document.getElementById("paceData").textContent = averagePace;
+    var averageHeartRate = "${averageHeartRate}";
+    document.getElementById("hrData").textContent = averageHeartRate + " bpm";
+
     var coordinates = [[${coordinates}]];
-    var heartRateData = [[${heartRate}]];  // Dane tętna
 
-    console.log(heartRateData);  // Sprawdź dane w konsoli
 
-    // Inicjalizacja mapy
+
+
+    // var elevationData = [[${elevation}]];
+    // var heartRateData = [[${heartRate}]];
+    // var paceData = [[${paceData}]];
+    // var paceForKm = [[${paceForKm}]];
+    // var gapPace = [[${gapPace}]];
+    // var MApace = [[${MApace}]];
+    // var MAGapPace = [[${MAGapPace}]];
+    // var avgGapPacePerKm = [[${avgGapPacePerKm}]];
+    //
+    // //avgs
+    // var avgPace = [[${avgPace}]];
+    // var avgHR = [[${avgHeartRate}]];
+    // var avgGapPace = [[${avgGapPace}]];
+    // document.getElementById("paceData").textContent = avgPace;
+    // document.getElementById("hrData").textContent = avgHR + " bpm";
+    // document.getElementById("gapPaceData").textContent = avgGapPace + " m";
+
+    console.log(paceForKm);
+    var map;
+    var marker;
+    var customIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="width: 12px; height: 12px; background-color: blue; border: 2px solid white; border-radius: 50%;"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+    });
+
     if (coordinates && coordinates.length > 0) {
-        var map = L.map('map').setView([coordinates[0][0], coordinates[0][1]], 13);
+        map = L.map('map').setView([coordinates[0][0], coordinates[0][1]], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -47,61 +241,210 @@
             return [coord[0], coord[1]];
         });
 
-        var polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map);
-        map.fitBounds(polyline.getBounds());
-    } else {
-        console.log("Brak danych współrzędnych");
+        L.polyline(latlngs, { color: 'red' }).addTo(map);
+        map.fitBounds(latlngs);
+        marker = L.marker([coordinates[0][0], coordinates[0][1]], { icon: customIcon }).addTo(map);
     }
 
-    // Oblicz minimalne i maksymalne tętno
-    if (heartRateData && heartRateData.length > 0) {
-        var minHR = Math.min(...heartRateData);
-        var maxHR = Math.max(...heartRateData);
-        var yMin = minHR - 15;
-        var yMax = maxHR + 15;
+    function updateMarkerPosition(percentage) {
+        var index = Math.floor((percentage / 100) * (coordinates.length - 1));
+        var newPos = coordinates[index];
+        marker.setLatLng(newPos);
+    }
 
-        var ctx = document.getElementById('heartRateChart').getContext('2d');
+    var ctxPace = document.getElementById('paceChart').getContext('2d');
+    var maxPace = Math.max(...paceData);
+    var yMin = Math.floor(maxPace + 0.5);
+    var elevationVisible = true;
+    var hrVisible = false;
+    var paceVisible = true;
 
-        var heartRateChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: Array.from({length: heartRateData.length}, (_, i) => i + 1),  // Próbki (1, 2, 3...)
-                datasets: [{
+    function formatTime(value) {
+        var minutes = Math.floor(value);
+        var seconds = Math.round((value - minutes) * 60);
+        return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+    }
+
+    var paceChart = new Chart(ctxPace, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: paceData.length}, (_, i) => (i + 1)),
+            datasets: [
+                {
+                    label: 'Tempo (min/km)',
+                    data: paceData,
+                    borderColor: 'blue',
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    tension: 0.4,
+                    yAxisID: 'paceAxis',
+                    hidden: !paceVisible
+                },
+                {
+                    label: 'Wysokość (m)',
+                    data: elevationData,
+                    backgroundColor: 'rgba(200, 200, 200, 0.5)',
+                    borderWidth: 0,
+                    type: 'line',
+                    pointRadius: 0,
+                    fill: true,
+                    yAxisID: 'elevationAxis',
+                    hidden: !elevationVisible
+                },
+                {
                     label: 'Tętno (bpm)',
                     data: heartRateData,
-                    borderColor: 'red',  // Czerwona linia
-                    borderWidth: 2,
-                    pointRadius: 0,  // Usuń punkciki
-                    backgroundColor: 'rgba(255, 0, 0, 0.1)',  // Cieniowanie pod wykresem
-                    fill: true,
-                    tension: 0.4  // Płynność krzywej
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false  // Ukryj legendę
-                    }
-                },
-                scales: {
-                    x: {
-                        display: false  // Ukryj oś X
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    tension: 0.4,
+                    yAxisID: 'hrAxis',
+                    hidden: !hrVisible
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Dystans (km)'
                     },
-                    y: {
-                        min: yMin,
-                        max: yMax,
-                        title: {
-                            display: true,
-                            text: 'Tętno (bpm)'
+                    ticks: {
+                        callback: function(value, index, values) {
+                            if (index % 40 === 0) {
+                                return value / 40 + ' km';
+                            }
                         }
                     }
+                },
+                paceAxis: {
+                    reverse: true,
+                    title: {
+                        display: true,
+                        text: 'Tempo (min/km)'
+                    },
+                    position: 'left',
+                    grid: {
+                        drawOnChartArea: false
+                    },
+                    type: 'logarithmic',
+                },
+                elevationAxis: {
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Wysokość (m)'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                },
+                hrAxis: {
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                tooltip: {
+                    enabled: true
+                },
+                legend: {
+                    display: false
                 }
             }
-        });
-    } else {
-        console.log("Brak danych tętna");
-    }
+        }
+    });
+    paceChart.data.datasets.push({
+        label: 'GAP Pace (min/km)',
+        data: gapPace,
+        reverse: true,
+        borderColor: 'green',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.4,
+        yAxisID: 'paceAxis',
+        hidden: true
+    });
+    paceChart.data.datasets.push({
+        label: 'MA10 PACE',
+        data: MApace,
+        reverse: true,
+        borderColor: 'blue',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.4,
+        yAxisID: 'paceAxis',
+        hidden: true
+    });
+    paceChart.data.datasets.push({
+        label: 'MA10  gap PACE',
+        data: MAGapPace,
+        reverse: true,
+        borderColor: 'green',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.4,
+        yAxisID: 'paceAxis',
+        hidden: true
+    });
+    document.getElementById('toggleMAGapPace').addEventListener('change', function() {
+        var MAGapPaceVisible = this.checked;
+        paceChart.data.datasets[5].hidden = !MAGapPaceVisible;
+        paceChart.update();
+    });
+    document.getElementById('toggleMAPace').addEventListener('change', function() {
+        var MApaceVisible = this.checked;
+        paceChart.data.datasets[4].hidden = !MApaceVisible;
+        paceChart.update();
+    });
+    document.getElementById('toggleGapPace').addEventListener('change', function() {
+        var gapPaceVisible = this.checked;
+        paceChart.data.datasets[3].hidden = !gapPaceVisible;
+        paceChart.update();
+    });
+
+    document.getElementById('toggleElevation').addEventListener('change', function() {
+        elevationVisible = this.checked;
+        paceChart.data.datasets[1].hidden = !elevationVisible;
+        paceChart.update();
+    });
+
+    document.getElementById('toggleHR').checked = false;
+    document.getElementById('toggleHR').addEventListener('change', function() {
+        hrVisible = this.checked;
+        paceChart.data.datasets[2].hidden = !hrVisible;
+        paceChart.update();
+    });
+
+    document.getElementById('togglePace').addEventListener('change', function() {
+        paceVisible = this.checked;
+        paceChart.data.datasets[0].hidden = !paceVisible;
+        paceChart.update();
+    });
+    var tableBody = document.querySelector('#paceTable tbody');
+
+    paceForKm.forEach(function(pace, index) {
+        var row = document.createElement('tr');
+        var kmCell = document.createElement('td');
+        var paceCell = document.createElement('td');
+        var gapPaceCell = document.createElement('td');  // New cell for Gap Pace
+
+        kmCell.textContent = (index + 1);
+        paceCell.textContent = formatTime(pace);
+        gapPaceCell.textContent = formatTime(avgGapPacePerKm[index]);  // Display Gap Pace for each km
+
+        row.appendChild(kmCell);
+        row.appendChild(paceCell);
+        row.appendChild(gapPaceCell);  // Append Gap Pace cell
+        tableBody.appendChild(row);
+    });
 </script>
 
 </body>
