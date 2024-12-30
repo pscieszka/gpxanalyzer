@@ -15,6 +15,8 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Controller
@@ -39,12 +41,23 @@ public class FileController {
     }
 
     private void addAtributes(Model model, ParsedData data){
+        //info
         model.addAttribute("totalTimeInString", data.getTotalTimeInString());
         model.addAttribute("totalDistance", data.getTotalDistanceInKm());
         model.addAttribute("elevationGain", data.getElevationGain());
         model.addAttribute("averageHeartRate", data.getAverageHeartRate());
         model.addAttribute("averagePace", data.getAveragePace());
         model.addAttribute("averageGapPace", data.getAverageGapPace());
+        //table
+//        model.addAttribute("averageElevationGainPerKm", data.getElevationGainPerKm());
+//        model.addAttribute("pacePerKm", data.getPacePerKm());
+//        model.addAttribute("gapPacePerKm", data.getGapPacePerKm());
+//        model.addAttribute("heartRatePerKm", data.getHeartRatePerKm());
+
+        model.addAttribute("pacePerKm", data.getPacePerKm());
+        model.addAttribute("gapPacePerKm", data.getGapPacePerKm());
+        model.addAttribute("heartRatePerKm", data.getHeartRatePerKm());
+        model.addAttribute("averageElevationGainPerKm", data.getElevationGainPerKm());
 
         model.addAttribute("coordinates", data.getCoordinates());
 
@@ -74,7 +87,6 @@ public class FileController {
         AnalysisComponent averagePaceService = new AveragePaceService();
         AnalysisComponent averageGapPaceService = new AverageGapPaceService();
 
-
         AnalysisProcessor processor = AnalysisProcessor.getInstance();
 
         processor.addComponent(distanceService);
@@ -85,6 +97,8 @@ public class FileController {
         processor.addComponent(averageGapPaceService);
 
         processor.process(data);
+        //AFTER REDUCING TRACKING POINTS
+
         return data;
     }
 

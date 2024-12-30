@@ -143,8 +143,10 @@
             <thead>
             <tr>
                 <th>Km</th>
-                <th>Tempo (min/km)</th>
+                <th>Pace (min/km)</th>
                 <th>Gap Pace (min/km)</th>
+                <th>Elevation (m)</th>
+                <th>Average HR (bmp)</th>
             </tr>
             </thead>
             <tbody>
@@ -193,34 +195,15 @@
 <script>
 
     //info
-    var averagePace = "${averagePace}";
-    document.getElementById("paceData").textContent = averagePace;
-    var averageHeartRate = "${averageHeartRate}";
-    document.getElementById("hrData").textContent = averageHeartRate + " bpm";
+    var averageElevationGainPerKm = [[${averageElevationGainPerKm}]];
+    var pacePerKm = [[${pacePerKm}]];
+    var gapPacePerKm = [[${gapPacePerKm}]];
+    var hrPerKm = [[${heartRatePerKm}]];
+
 
     var coordinates = [[${coordinates}]];
 
 
-
-
-    // var elevationData = [[${elevation}]];
-    // var heartRateData = [[${heartRate}]];
-    // var paceData = [[${paceData}]];
-    // var paceForKm = [[${paceForKm}]];
-    // var gapPace = [[${gapPace}]];
-    // var MApace = [[${MApace}]];
-    // var MAGapPace = [[${MAGapPace}]];
-    // var avgGapPacePerKm = [[${avgGapPacePerKm}]];
-    //
-    // //avgs
-    // var avgPace = [[${avgPace}]];
-    // var avgHR = [[${avgHeartRate}]];
-    // var avgGapPace = [[${avgGapPace}]];
-    // document.getElementById("paceData").textContent = avgPace;
-    // document.getElementById("hrData").textContent = avgHR + " bpm";
-    // document.getElementById("gapPaceData").textContent = avgGapPace + " m";
-
-    console.log(paceForKm);
     var map;
     var marker;
     var customIcon = L.divIcon({
@@ -244,6 +227,74 @@
         L.polyline(latlngs, { color: 'red' }).addTo(map);
         map.fitBounds(latlngs);
         marker = L.marker([coordinates[0][0], coordinates[0][1]], { icon: customIcon }).addTo(map);
+    }
+
+    var totalDistance = ("[[${totalDistance}]]").replace(',', '.');
+    totalDistance = parseFloat(totalDistance);
+    var totalDistanceFloat = parseFloat(totalDistance);
+
+    var fullKilometers = Math.floor(totalDistanceFloat);
+    var remainingDistance = totalDistanceFloat - fullKilometers;
+
+
+    function convertSecondsToTimeFormat(seconds) {
+        var minutes = Math.floor(seconds / 60);
+        var remainingSeconds = seconds % 60;
+        return minutes + ':' + (remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds);
+    }
+
+    var tableBody = document.querySelector('#paceTable tbody');
+    tableBody.innerHTML = '';
+
+    pacePerKm.forEach(function(pace, index) {
+        var row = document.createElement('tr');
+
+        var kmCell = document.createElement('td');
+        var paceCell = document.createElement('td');
+        var gapPaceCell = document.createElement('td');
+        var elevationCell = document.createElement('td');
+        var hrCell = document.createElement('td');
+
+        kmCell.textContent = index + 1;
+        paceCell.textContent = convertSecondsToTimeFormat(pace);
+        gapPaceCell.textContent = convertSecondsToTimeFormat(gapPacePerKm[index]);
+        elevationCell.textContent = averageElevationGainPerKm[index];
+        hrCell.textContent = hrPerKm[index];
+
+        row.appendChild(kmCell);
+        row.appendChild(paceCell);
+        row.appendChild(gapPaceCell);
+        row.appendChild(elevationCell);
+        row.appendChild(hrCell);
+
+        tableBody.appendChild(row);
+    });
+
+    // Jeśli jest pozostały fragment kilometra (np. 0.66), dodajemy go na końcu
+    if (remainingDistance > 0) {
+        var lastIndex = fullKilometers - 1;  // Indeks ostatniego pełnego kilometra
+
+        var row = document.createElement('tr');
+
+        var kmCell = document.createElement('td');
+        var paceCell = document.createElement('td');
+        var gapPaceCell = document.createElement('td');
+        var elevationCell = document.createElement('td');
+        var hrCell = document.createElement('td');
+
+        kmCell.textContent = remainingDistance.toFixed(2);  // Ostatni fragment kilometra, np. 0.66
+        paceCell.textContent = convertSecondsToTimeFormat(pacePerKm[lastIndex]);  // Tempo z ostatniego pełnego kilometra
+        gapPaceCell.textContent = convertSecondsToTimeFormat(gapPacePerKm[lastIndex]);
+        elevationCell.textContent = averageElevationGainPerKm[lastIndex];
+        hrCell.textContent = hrPerKm[lastIndex];
+
+        row.appendChild(kmCell);
+        row.appendChild(paceCell);
+        row.appendChild(gapPaceCell);
+        row.appendChild(elevationCell);
+        row.appendChild(hrCell);
+
+        tableBody.appendChild(row);
     }
 
     function updateMarkerPosition(percentage) {
@@ -428,23 +479,8 @@
         paceChart.data.datasets[0].hidden = !paceVisible;
         paceChart.update();
     });
-    var tableBody = document.querySelector('#paceTable tbody');
 
-    paceForKm.forEach(function(pace, index) {
-        var row = document.createElement('tr');
-        var kmCell = document.createElement('td');
-        var paceCell = document.createElement('td');
-        var gapPaceCell = document.createElement('td');  // New cell for Gap Pace
-
-        kmCell.textContent = (index + 1);
-        paceCell.textContent = formatTime(pace);
-        gapPaceCell.textContent = formatTime(avgGapPacePerKm[index]);  // Display Gap Pace for each km
-
-        row.appendChild(kmCell);
-        row.appendChild(paceCell);
-        row.appendChild(gapPaceCell);  // Append Gap Pace cell
-        tableBody.appendChild(row);
-    });
+</script>
 </script>
 
 </body>

@@ -14,6 +14,7 @@ public class ParsedData {
     private List<Integer> time;
     private List<Double> elevation;
 
+
     //Processed raw data
     private List<Double> distanceList;
 
@@ -22,8 +23,12 @@ public class ParsedData {
     private int elevationGain;
     private int averageHeartRate;
     private String averagePace;
-
     private String averageGapPace;
+
+    private List<Integer> elevationGainPerKm;
+    private List<Integer> heartRatePerKm;
+    private List<Integer> pacePerKm;
+    private List<Integer> gapPacePerKm;
 
 
 
@@ -35,6 +40,9 @@ public class ParsedData {
         this.elevation = elevation;
         this.time = time;
         //getDataInIntervals(); -> do wykresow tlyko
+    }
+    public List<Double> getDistanceList() {
+        return distanceList;
     }
 
     public  void setDistanceList(List<Double> distanceList) {
@@ -98,6 +106,32 @@ public class ParsedData {
     public String getAverageGapPace() {
         return averageGapPace;
     }
+
+    public void setElevationGainPerKm(List<Integer> elevationGainPerKm) {
+        this.elevationGainPerKm = elevationGainPerKm;
+    }
+    public List<Integer> getElevationGainPerKm() {
+        return elevationGainPerKm;
+    }
+    public void setHeartRatePerKm(List<Integer> heartRatePerKm) {
+        this.heartRatePerKm = heartRatePerKm;
+    }
+    public List<Integer> getHeartRatePerKm() {
+        return heartRatePerKm;
+    }
+    public void setPacePerKm(List<Integer> pacePerKm) {
+        this.pacePerKm = pacePerKm;
+    }
+    public List<Integer> getPacePerKm() {
+        return pacePerKm;
+    }
+    public void setGapPacePerKm(List<Integer> gapPacePerKm) {
+        this.gapPacePerKm = gapPacePerKm;
+    }
+    public List<Integer> getGapPacePerKm() {
+        return gapPacePerKm;
+    }
+
 
     //
 //    public List<Integer> getHeartRates() {
