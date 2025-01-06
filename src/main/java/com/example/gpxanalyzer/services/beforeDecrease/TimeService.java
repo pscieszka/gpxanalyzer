@@ -1,8 +1,7 @@
-package com.example.gpxanalyzer.services;
+package com.example.gpxanalyzer.services.beforeDecrease;
 
 import com.example.gpxanalyzer.DataModels.ParsedData;
-
-import java.util.List;
+import com.example.gpxanalyzer.services.Common.AnalysisComponent;
 
 public class TimeService implements AnalysisComponent {
     public void process(ParsedData data) {

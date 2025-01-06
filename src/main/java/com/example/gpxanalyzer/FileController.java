@@ -3,9 +3,10 @@ package com.example.gpxanalyzer;
 import com.example.gpxanalyzer.DataModels.ParsedData;
 import com.example.gpxanalyzer.FileTypesStrategies.FileParser;
 import com.example.gpxanalyzer.FileTypesStrategies.FileParserFactory;
-import com.example.gpxanalyzer.services.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.gpxanalyzer.services.Common.AnalysisComponent;
+import com.example.gpxanalyzer.services.Common.AnalysisProcessor;
+import com.example.gpxanalyzer.services.afterDecrease.*;
+import com.example.gpxanalyzer.services.beforeDecrease.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,8 +16,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 
 @Controller
@@ -31,11 +30,7 @@ public class FileController {
         FileParser strategy = FileParserFactory.getParser(filename);
         ParsedData data = processData(strategy.parseFile(file.getInputStream()));
 
-
-
         addAtributes(model, data);
-        Logger logger = LoggerFactory.getLogger(FileController.class);
-        logger.info("total dystans: " + data.getTotalDistance());
 
         return "map";
     }
@@ -49,35 +44,26 @@ public class FileController {
         model.addAttribute("averagePace", data.getAveragePace());
         model.addAttribute("averageGapPace", data.getAverageGapPace());
         //table
-//        model.addAttribute("averageElevationGainPerKm", data.getElevationGainPerKm());
-//        model.addAttribute("pacePerKm", data.getPacePerKm());
-//        model.addAttribute("gapPacePerKm", data.getGapPacePerKm());
-//        model.addAttribute("heartRatePerKm", data.getHeartRatePerKm());
-
         model.addAttribute("pacePerKm", data.getPacePerKm());
         model.addAttribute("gapPacePerKm", data.getGapPacePerKm());
         model.addAttribute("heartRatePerKm", data.getHeartRatePerKm());
         model.addAttribute("averageElevationGainPerKm", data.getElevationGainPerKm());
-
+        //map
         model.addAttribute("coordinates", data.getCoordinates());
+        //chart
+        model.addAttribute("paceData", data.getPaceChart());
+        model.addAttribute("HrData",data.getHrChart());
+        model.addAttribute("elevationData", data.getElevationRaw());
+        model.addAttribute("gapPace", data.getGapPaceChart());
+        model.addAttribute("gradeChart", data.getGradeChartMovingAverage());
+        //table
+        model.addAttribute("pacesAtGrades", data.getPacesAtGrades());
+        //ratio
+        model.addAttribute("hrPaceRatios", data.getHrPaceRatios());
+        model.addAttribute("effortScore", data.getEffortScore());
 
-//        model.addAttribute("coordinates", data.getCoordinates());
-//        model.addAttribute("heartRate", data.getHeartRates());
-//        model.addAttribute("elevation", data.getElevation());
-//        model.addAttribute("time", data.getTotalTimeInSeconds());
-//        model.addAttribute("paceData", data.getPace());
-//        model.addAttribute("grade",data.getGrade());
-//        model.addAttribute("minGrade", data.getMinGrade(data.getGrade()));
-//        model.addAttribute("maxGrade", data.getMaxGrade(data.getGrade()));
-//        model.addAttribute("paceAtGrades", data.getPaceAtGrades());
-//        model.addAttribute("paceForKm", data.getPaceForKm());
-//        model.addAttribute("gapPace", data.getGapPace());
-//        model.addAttribute("MApace", MovingAvgService.movingAverage(data.getPace(),10));
-//        model.addAttribute("MAGapPace", MovingAvgService.movingAverage(data.getGapPace(),10));
-//        model.addAttribute("avgPace", AveragesService.getAveragePace(data.getPace()));
-//        model.addAttribute("avgGapPace", AveragesService.getAverageGapPace(data.getGapPace()));
-//        model.addAttribute("avgHeartRate", AveragesService.getAverageHeartRate(data.getHeartRates()));
-//        model.addAttribute("avgGapPacePerKm", AveragesService.getAverageGapPacePerKm(data));
+        model.addAttribute("hrAtPaces", data.getHrAtPaces());
+
     }
     private ParsedData processData(ParsedData data){
         AnalysisComponent distanceService = new DistanceService();
@@ -86,6 +72,8 @@ public class FileController {
         AnalysisComponent heartRateService = new HeartRateService();
         AnalysisComponent averagePaceService = new AveragePaceService();
         AnalysisComponent averageGapPaceService = new AverageGapPaceService();
+
+
 
         AnalysisProcessor processor = AnalysisProcessor.getInstance();
 
@@ -98,6 +86,29 @@ public class FileController {
 
         processor.process(data);
         //AFTER REDUCING TRACKING POINTS
+        data.getDataInIntervals();
+        processor.clearComponents();
+        AnalysisComponent paceChartService = new PaceChartService();
+        AnalysisComponent HeartRateChartService = new HeartRateChartService();
+        AnalysisComponent gradeChartService = new GradeService();
+        AnalysisComponent gapPaceChartService = new GapPaceChartService();
+        AnalysisComponent HrPaceRatioService = new HrPaceRatioService();
+        AnalysisComponent HrAtPaceService = new AverageHrAtPacesService();
+
+
+
+        processor.addComponent(distanceService);
+        processor.addComponent(paceChartService);
+        processor.addComponent(HeartRateChartService);
+        processor.addComponent(gradeChartService);
+        processor.addComponent(elevationGainService);
+        processor.addComponent(gapPaceChartService);
+        processor.addComponent(HrPaceRatioService);
+        processor.addComponent(HrAtPaceService);
+
+
+        processor.process(data);
+
 
         return data;
     }

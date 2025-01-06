@@ -1,15 +1,20 @@
-package com.example.gpxanalyzer.services;
+package com.example.gpxanalyzer.services.Common;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class GapPaceCalculator {
 
     public static List<Double> handle(List<Double> pace, List<Double> grade){
+        Logger logger = Logger.getLogger(GapPaceCalculator.class.getName());
         List<Double> gapPace = new ArrayList<>();
+        logger.info("pace size: " + pace.size() + " grade size: " + grade.size());
         int size = Math.min(pace.size(), grade.size());
         for (int i = 0; i < size; i++) {
+
             gapPace.add(pace.get(i)/calculateGapPaceMultiplier(grade.get(i)));
+            logger.info("index: " + i + " pace: " + pace.get(i)/calculateGapPaceMultiplier(grade.get(i)) + " grade: " + grade.get(i));
         }
 
         return gapPace;

@@ -1,11 +1,12 @@
-package com.example.gpxanalyzer.services;
+package com.example.gpxanalyzer.services.beforeDecrease;
 
 import com.example.gpxanalyzer.DataModels.ParsedData;
+import com.example.gpxanalyzer.services.Common.AnalysisComponent;
+import com.example.gpxanalyzer.services.Common.GapPaceCalculator;
 
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class AverageGapPaceService implements AnalysisComponent {
     public void process(ParsedData data) {
@@ -27,7 +28,7 @@ public class AverageGapPaceService implements AnalysisComponent {
 
     private List<Integer> calculateGapPacePerKm(ParsedData data){
         List<Integer> pacePerKm = data.getPacePerKm();
-        List<Integer> elevationGainPerKm = data.getElevationGainPerKm();
+        List<Integer> elevationGainPerKm = data.getElevationGainPerKmForCalculation();
         List<Integer> gapPacePerKm = new ArrayList<>();
         for(int i=0; i<pacePerKm.size(); i++){
             double pace = (double) pacePerKm.get(i)/60;

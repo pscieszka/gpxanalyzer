@@ -1,4 +1,4 @@
-package com.example.gpxanalyzer.services;
+package com.example.gpxanalyzer.services.Common;
 
 import com.example.gpxanalyzer.DataModels.ParsedData;
 

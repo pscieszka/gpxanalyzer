@@ -1,6 +1,7 @@
-package com.example.gpxanalyzer.services;
+package com.example.gpxanalyzer.services.beforeDecrease;
 
 import com.example.gpxanalyzer.DataModels.ParsedData;
+import com.example.gpxanalyzer.services.Common.AnalysisComponent;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,12 +4,141 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wgraj plik GPX</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 500px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            padding: 30px;
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+            word-wrap: break-word;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
+        }
+
+        .upload-area:hover {
+            background-color: #e8f0fe;
+        }
+
+        .upload-area.dragover {
+            background-color: #e0e8ff;
+            border-color: #0056b3;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .file-name {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #333;
+            word-wrap: break-word;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            display: block;
+            text-align: center;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-<h1>Wgraj plik GPX</h1>
-<form action="/upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".gpx,.tcx,.fit" required>
-    <button type="submit">Prześlij</button>
-</form>
+<div class="container">
+    <h1>Upload File</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label class="upload-area" id="uploadArea" for="fileInput">
+        Click to select a file or drag a file here
+            <input type="file" name="file" accept=".gpx,.tcx,.fit" required id="fileInput">
+        </label>
+        <div id="fileName" class="file-name"></div>
+        <button type="submit">Upload</button>
+    </form>
+</div>
+
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameDisplay = document.getElementById('fileName');
+
+    uploadArea.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (event) => {
+        event.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const file = event.dataTransfer.files[0];
+        displayFileName(file);
+    });
+
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        displayFileName(file);
+    });
+
+    function displayFileName(file) {
+        if (file) {
+            fileNameDisplay.textContent = `Choosen file: ${file.name}`;
+        }
+    }
+</script>
 </body>
 </html>

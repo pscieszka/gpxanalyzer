@@ -1,4 +1,4 @@
-package com.example.gpxanalyzer.services;
+package com.example.gpxanalyzer.services.Common;
 
 import com.example.gpxanalyzer.DataModels.ParsedData;
 
@@ -27,5 +27,8 @@ public class AnalysisProcessor implements AnalysisComponent {
         for (AnalysisComponent component : components) {
             component.process(data);
         }
+    }
+    public void clearComponents() {
+        components.clear();
     }
 }
