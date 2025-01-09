@@ -58,6 +58,8 @@ public class AveragePaceService implements AnalysisComponent {
 
 
 
+
+
         return pacePerKm;
     }
 

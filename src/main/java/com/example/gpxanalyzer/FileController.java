@@ -30,12 +30,12 @@ public class FileController {
         FileParser strategy = FileParserFactory.getParser(filename);
         ParsedData data = processData(strategy.parseFile(file.getInputStream()));
 
-        addAtributes(model, data);
+        addAttributes(model, data);
 
         return "map";
     }
 
-    private void addAtributes(Model model, ParsedData data){
+    private void addAttributes(Model model, ParsedData data){
         //info
         model.addAttribute("totalTimeInString", data.getTotalTimeInString());
         model.addAttribute("totalDistance", data.getTotalDistanceInKm());

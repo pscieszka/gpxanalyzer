@@ -33,16 +33,11 @@ public class DistanceService implements AnalysisComponent {
         double deltaLat = lat2 - lat1;
         double deltaLon = lon2 - lon1;
 
-        double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+        return Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
                 Math.cos(lat1) * Math.cos(lat2) *
                         Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-        return a;
     }
     public static double calculateDistance(List<Double> coord1, List<Double> coord2) {
-        if (coord1.size() != 2 || coord2.size() != 2) {
-            throw new IllegalArgumentException("Współrzędne muszą mieć dokładnie dwa elementy (szerokość i długość geograficzną).");
-        }
-
         double lat1 = Math.toRadians(coord1.get(0));
         double lon1 = Math.toRadians(coord1.get(1));
         double lat2 = Math.toRadians(coord2.get(0));
