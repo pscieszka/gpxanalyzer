@@ -8,7 +8,76 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+        .tables-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-top: 60px;
+            margin: 20px 0;
+            gap: 20px;
+        }
+
+        .table-section {
+            flex: 1;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-section h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
 <body>
+<a href="/activityList" class="back-button">Back to Activities List</a>
+
 <div id="container">
     <div id="info">
         <h3>Info</h3>
@@ -48,7 +117,7 @@
             </label>
             <label>
                 Elevation (m)
-                <input type="checkbox" id="toggleElevation" checked>
+                <input type="checkbox" id="toggleElevation">
                 <span class="toggle-slider"></span>
             </label>
             <label>
@@ -69,38 +138,59 @@
         </div>
     </div>
 </div>
-
-<div>
-    <table id="gradePaceTable">
-        <thead>
-        <tr>
-            <th>Grade Interval (%)</th>
-            <th>Average Pace (min/km)</th>
-            <th>Average GAP Pace (min/km)</th>
-
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="paceAtGrade : ${pacesAtGrades}">
-            <td th:text="${paceAtGrade.interval}"></td>
-            <td th:text="${#numbers.formatInteger((paceAtGrade.averagePace) - (paceAtGrade.averagePace % 1), 2) + ':' + #numbers.formatInteger(((paceAtGrade.averagePace % 1) * 60), 2)}"></td>
-            <td th:text="${#numbers.formatInteger((paceAtGrade.averageGapPace) - (paceAtGrade.averageGapPace % 1), 2) + ':' + #numbers.formatInteger(((paceAtGrade.averageGapPace % 1) * 60), 2)}"></td>
-
-        </tr>
-        <tr th:if="${pacesAtGrades.empty}">
-            <td colspan="2">No data available</td>
-        </tr>
-        </tbody>
-    </table>
-    <div id="chartContainer2">
-        <div class="chart">
-            <canvas id="hrPaceRatioChart"></canvas>
-        </div>
-        <div class="effort-score">
-            <h2 class="effort-score-value" style="color: violet;" th:text="${effortScore}">75</h2>
-            <p><strong>Effort Score</strong></p>
-        </div>
+<div class="tables-container">
+    <div class="table-section">
+        <table id="gradePaceTable">
+            <thead>
+            <tr>
+                <th>Grade Interval (%)</th>
+                <th>Average Pace (min/km)</th>
+                <th>Average GAP Pace (min/km)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="paceAtGrade : ${pacesAtGrades}">
+                <td th:text="${paceAtGrade.interval}"></td>
+                <td th:text="${#numbers.formatInteger((paceAtGrade.averagePace) - (paceAtGrade.averagePace % 1), 2) + ':' + #numbers.formatInteger(((paceAtGrade.averagePace % 1) * 60), 2)}"></td>
+                <td th:text="${#numbers.formatInteger((paceAtGrade.averageGapPace) - (paceAtGrade.averageGapPace % 1), 2) + ':' + #numbers.formatInteger(((paceAtGrade.averageGapPace % 1) * 60), 2)}"></td>
+            </tr>
+            <tr th:if="${pacesAtGrades.empty}">
+                <td colspan="3">No data available</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
+
+    <div class="table-section">
+        <h3>Best Efforts</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Distance</th>
+                <th>Time</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${fastestTimes}">
+                <td th:text="${entry.key}"></td>
+                <td th:text="${entry.value}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(fastestTimes)}">
+                <td colspan="2">No best efforts available</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div id="chartContainer2">
+    <div class="chart">
+        <canvas id="hrPaceRatioChart"></canvas>
+    </div>
+    <div class="effort-score">
+        <h2 class="effort-score-value" style="color: violet;" th:text="${effortScore}">75</h2>
+        <p><strong>Effort Score</strong></p>
+    </div>
+</div>
 </div>
 <div>
     <table id="hrAtPacesTable">
@@ -122,21 +212,18 @@
     </table>
 </div>
 <script>
-    //info
     var averageElevationGainPerKm = [[${averageElevationGainPerKm}]];
     var pacePerKm = [[${pacePerKm}]];
     var gapPacePerKm = [[${gapPacePerKm}]];
     var hrPerKm = [[${heartRatePerKm}]];
 
     var coordinates = [[${coordinates}]];
-    //chart
     var paceData = [[${paceData}]];
     var HrData = [[${HrData}]];
     var elevationData = [[${elevationData}]];
     var gapPace = [[${gapPace}]];
     var gradeChart = [[${gradeChart}]];
     var hrPaceRatios = [[${hrPaceRatios}]];
-
 </script>
 <script src="/js/script.js"></script>
 </body>

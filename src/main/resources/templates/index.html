@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wgraj plik GPX</title>
+    <title>Wgraj pliki GPX</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -79,6 +79,17 @@
             font-size: 16px;
             color: #333;
             word-wrap: break-word;
+            text-align: left;
+        }
+
+        .file-name ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .file-name li {
+            margin-bottom: 5px;
         }
 
         form {
@@ -93,18 +104,26 @@
             cursor: pointer;
             width: 100%;
         }
+
+        .loading-icon {
+            display: none;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Upload File</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
+    <h1>Upload Files</h1>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
         <label class="upload-area" id="uploadArea" for="fileInput">
-        Click to select a file or drag a file here
-            <input type="file" name="file" accept=".gpx,.tcx,.fit" required id="fileInput">
+            Click to select files or drag files here
+            <input type="file" accept=".gpx,.tcx,.fit" id="fileInput" multiple>
         </label>
+        <button type="button" id="uploadButton">Upload</button>
         <div id="fileName" class="file-name"></div>
-        <button type="submit">Upload</button>
+        <div class="loading-icon" id="loadingIcon">
+            <label>Uploading...</label>
+        </div>
     </form>
 </div>
 
@@ -112,6 +131,9 @@
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const fileNameDisplay = document.getElementById('fileName');
+    const uploadButton = document.getElementById('uploadButton');
+    const loadingIcon = document.getElementById('loadingIcon');
+    const fileList = [];
 
     uploadArea.addEventListener('dragover', (event) => {
         event.preventDefault();
@@ -125,20 +147,56 @@
     uploadArea.addEventListener('drop', (event) => {
         event.preventDefault();
         uploadArea.classList.remove('dragover');
-        const file = event.dataTransfer.files[0];
-        displayFileName(file);
+        const files = Array.from(event.dataTransfer.files);
+        addFilesToList(files);
     });
 
     fileInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        displayFileName(file);
+        const files = Array.from(event.target.files);
+        addFilesToList(files);
+        fileInput.value = '';
     });
 
-    function displayFileName(file) {
-        if (file) {
-            fileNameDisplay.textContent = `Choosen file: ${file.name}`;
-        }
+    function addFilesToList(files) {
+        files.forEach(file => {
+            if (!fileList.find(f => f.name === file.name)) {
+                fileList.push(file);
+            }
+        });
+        updateFileList();
     }
+
+    function updateFileList() {
+        fileNameDisplay.innerHTML = '<ul>' + fileList.map(file => `<li>${file.name}</li>`).join('') + '</ul>';
+    }
+
+    uploadButton.addEventListener('click', () => {
+        if (fileList.length === 0) {
+            alert('Please select at least one file.');
+            return;
+        }
+
+        loadingIcon.style.display = 'block';
+
+        const formData = new FormData();
+        fileList.forEach(file => formData.append('files', file));
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = '/activityList';
+            } else {
+                alert('Failed to upload files.');
+            }
+        }).catch(err => {
+            console.error('Error uploading files:', err);
+            alert('Error occurred while uploading files.');
+        }).finally(() => {
+            loadingIcon.style.display = 'none';
+        });
+    });
 </script>
 </body>
 </html>

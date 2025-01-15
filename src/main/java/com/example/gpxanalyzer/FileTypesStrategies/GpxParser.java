@@ -28,6 +28,7 @@ public class GpxParser implements FileParser {
             List<Integer> heartRates = new ArrayList<>();
             List<Double> elevationList = new ArrayList<>();
             List<Integer> times = new ArrayList<>();
+            String name = document.getElementsByTagName("name").item(0).getTextContent();
             for (int i = 0; i < trkpts.getLength(); i++) {
                 Element trkpt = (Element) trkpts.item(i);
                 double lat = Double.parseDouble(trkpt.getAttribute("lat"));
@@ -58,7 +59,7 @@ public class GpxParser implements FileParser {
 
             }
 
-            return new ParsedData(coordinates, heartRates, elevationList, times);
+            return new ParsedData(name, coordinates, heartRates, elevationList, times);
         }
         catch (Exception e) {
             e.printStackTrace();

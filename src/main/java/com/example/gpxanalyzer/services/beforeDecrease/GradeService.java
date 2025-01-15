@@ -81,7 +81,6 @@ public class GradeService implements AnalysisComponent {
 
         return String.format("%.1f%% to %.1f%%", lowerBound, upperBound);
     }
-
     private static double extractLowerBound(String interval) {
         String lower = interval.split(" ")[0].replace("%", "").replace(",", ".");
         return Double.parseDouble(lower);

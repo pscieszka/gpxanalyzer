@@ -105,8 +105,8 @@ function updateMarkerPosition(percentage) {
 
 var ctxPace = document.getElementById('paceChart').getContext('2d');
 var maxPace = Math.max(...paceData);
-var yMin = Math.floor(maxPace + 0.5);
-var elevationVisible = true;
+
+var elevationVisible = false;
 var hrVisible = false;
 var paceVisible = true;
 var gradeVisible = false;

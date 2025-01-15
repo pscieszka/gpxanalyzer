@@ -28,9 +28,7 @@ public class HrPaceRatioService implements AnalysisComponent {
             hrPaceRatios.add(ratio);
 
         }
-
         return DataSmootherHandler.movingAverage(hrPaceRatios, 20);
-
     }
 
     public Integer getAverageEffortScore(List<Integer> hrPaceRatios) {

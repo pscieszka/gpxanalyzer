@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Aktywności</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .activities-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .activity-tile {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: left;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .activity-tile h2 {
+            font-size: 20px;
+            margin: 0 0 10px;
+            color: #007bff;
+        }
+
+        .activity-info {
+            font-size: 14px;
+            margin: 10px 0;
+            color: #555;
+        }
+
+        .activity-map {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .activity-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .activity-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<h1>Activites list</h1>
+
+<div th:if="${#lists.isEmpty(activities)}">
+    <p style="text-align: center;">Empty list.</p>
+</div>
+
+<div class="activities-container" th:unless="${#lists.isEmpty(activities)}">
+    <div class="activity-tile"
+         th:each="activity, iterStat : ${activities}"
+         th:attr="data-coordinates=${activity.coordinates}">
+        <button class="activity-button"
+                th:onclick="'location.href=\'/activity/' + ${iterStat.index} + '\''">
+            Open Activity
+        </button>
+        <h2 th:text="${activity.name}">Activity Name</h2>
+        <div class="activity-info">
+            <p>Total time: <span th:text="${activity.totalTimeInString}">0:00</span></p>
+            <p>Distance: <span th:text="${activity.distanceInString}">0 km</span></p>
+        </div>
+        <div class="activity-map" id="map" th:attr="id='map-' + ${iterStat.index}"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.activity-tile').forEach((tile, index) => {
+            const mapElement = tile.querySelector('.activity-map');
+            const mapId = `map-${index}`;
+            mapElement.setAttribute('id', mapId);
+
+            // Get the coordinates from the attribute
+            const coordinates = JSON.parse(tile.getAttribute('data-coordinates'));
+
+            if (coordinates && coordinates.length > 0) {
+                const map = L.map(mapId, {
+                    attributionControl: false
+                }).setView(coordinates[0], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+                const polyline = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+
+                map.fitBounds(polyline.getBounds());
+            }
+        });
+    });
+</script>
+</body>
+</html>

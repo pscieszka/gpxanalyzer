@@ -7,7 +7,6 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class AverageHrAtPacesService implements AnalysisComponent {
-    private static final Logger LOGGER = Logger.getLogger("PaceAnalysisLogger");
 
     @Override
     public void process(ParsedData data) {

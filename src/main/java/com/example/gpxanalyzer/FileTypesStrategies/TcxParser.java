@@ -28,6 +28,7 @@ public class TcxParser implements FileParser {
             List<Integer> heartRates = new ArrayList<>();
             List<Double> elevationList = new ArrayList<>();
             List<Integer> times = new ArrayList<>();
+            String name = document.getElementsByTagName("Id").item(0).getTextContent();
 
             for (int i = 0; i < trackpoints.getLength(); i++) {
                 Element trackpoint = (Element) trackpoints.item(i);
@@ -60,7 +61,7 @@ public class TcxParser implements FileParser {
                 times.add(time);
             }
 
-            return new ParsedData(coordinates, heartRates, elevationList, times);
+            return new ParsedData(name, coordinates, heartRates, elevationList, times);
         } catch (Exception e) {
             e.printStackTrace();
         }

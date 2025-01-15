@@ -20,7 +20,6 @@ public class HeartRateService implements AnalysisComponent {
         }
         return (int)heartRateSum / heartRateCounter;
     }
-
     private List<Integer> calculateHeartRatePerKm(ParsedData data) {
         List<Integer> heartRatePerKm = new ArrayList<>();
         List<Double> distance = data.getDistanceList();

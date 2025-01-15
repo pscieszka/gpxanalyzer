@@ -22,6 +22,7 @@ public class DistanceService implements AnalysisComponent {
         }
         data.setDistanceList(distanceList);
         data.setTotalDistance(distance);
+        setTotalDistanceInString(data, distance);
     }
 
     private static double getaDouble(List<List<Double>> coordinates, int i) {
@@ -51,9 +52,12 @@ public class DistanceService implements AnalysisComponent {
                         Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double EARTH_RADIUS = 6371e3;  // Promień Ziemi w metrach
+        double EARTH_RADIUS = 6371e3;
 
         return EARTH_RADIUS * c;
+    }
+    private void setTotalDistanceInString(ParsedData data, double distance) {
+        data.setDistanceInString(String.format("%.2f km", distance / 1000));
     }
 }
 

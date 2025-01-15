@@ -29,36 +29,32 @@ public class AveragePaceService implements AnalysisComponent {
 
         double distancePerKm = 0;
         int prevTime = time.get(0);
-        int cnt = 1;
         int size = Math.min(distance.size(), time.size());
 
         for (int i = 1; i < size; i++) {
             double distanceDelta = distance.get(i) - distance.get(i - 1);
-            int timeDelta = time.get(i) - prevTime;
+            int timeDelta = time.get(i) - time.get(i - 1);
 
             distancePerKm += distanceDelta;
 
-            if (distancePerKm >= 1000 * cnt) {
-                double pace = (double) timeDelta / 60;
-                int minutes = (int) pace;
-                int seconds = (int) ((pace - minutes) * 60);
-                pacePerKm.add(minutes * 60 + seconds);
-                prevTime = time.get(i);
-                cnt++;
+            while (distancePerKm >= 1000) {
+                double excessDistance = distancePerKm - 1000;
+                double interpolationFactor = (distanceDelta - excessDistance) / distanceDelta;
+                int interpolatedTime = (int) (timeDelta * interpolationFactor);
+
+                int kmTime = time.get(i - 1) - prevTime + interpolatedTime;
+                pacePerKm.add(kmTime);
+
+                prevTime += kmTime;
+                distancePerKm -= 1000;
             }
         }
 
-            double remainingDistance = distance.get(distance.size() - 1) - 1000 * (cnt - 1);
-            int remainingTime = time.get(time.size() - 1) - prevTime;
-
-            double pace = (double) remainingTime / remainingDistance * 1000 / 60;
-            int minutes = (int) pace;
-            int seconds = (int) ((pace - minutes) * 60);
-            pacePerKm.add(minutes * 60 + seconds);
-
-
-
-
+        if (distancePerKm > 0) {
+            int remainingTime = time.get(size - 1) - prevTime;
+            double pace = remainingTime / (distancePerKm / 1000.0);
+            pacePerKm.add((int) Math.round(pace));
+        }
 
         return pacePerKm;
     }

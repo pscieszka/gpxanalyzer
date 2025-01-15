@@ -8,6 +8,9 @@ import java.util.Map;
 
 public class ParsedData {
     //Raw data
+    public String name;
+    private String distanceInString;
+
     private List<List<Double>> coordinates;
     private List<Integer> heartRates;
     private List<Integer> time;
@@ -39,11 +42,13 @@ public class ParsedData {
     private List<Integer> hrPaceRatios;
     private Integer effortScore;
     private Map<String, String> hrAtPaces;
+    private Map<String, String> fastestTimes;
 
 
     public ParsedData() {}
 
-    public ParsedData(List<List<Double>> coordinates, List<Integer> heartRates, List<Double> elevation, List<Integer> time) {
+    public ParsedData(String name, List<List<Double>> coordinates, List<Integer> heartRates, List<Double> elevation, List<Integer> time) {
+        this.name = name;
         this.coordinates = coordinates;
         this.heartRates = heartRates;
         this.elevation = elevation;
@@ -206,6 +211,19 @@ public class ParsedData {
     public List<Double> getElevationRaw() {
         return elevation;
     }
+    public void setDistanceInString(String distance) {
+        this.distanceInString = distance;
+    }
+    public String getDistanceInString() {
+        return distanceInString;
+    }
+    public void setFastestTimes(Map<String, String> fastestTimes) {
+        this.fastestTimes = fastestTimes;
+    }
+    public Map<String, String> getFastestTimes() {
+        return fastestTimes;
+    }
+
 
     public void getDataInIntervals() {
         List<List<Double>> tempCoordinates = new ArrayList<>();

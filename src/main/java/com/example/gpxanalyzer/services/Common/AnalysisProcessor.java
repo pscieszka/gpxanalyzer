@@ -18,11 +18,9 @@ public class AnalysisProcessor implements AnalysisComponent {
         }
         return instance;
     }
-
     public void addComponent(AnalysisComponent component) {
         components.add(component);
     }
-
     public void process(ParsedData data) {
         for (AnalysisComponent component : components) {
             component.process(data);

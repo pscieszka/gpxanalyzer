@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataSmootherHandler {
-
     public static <T extends Number> List<T> movingAverage(List<T> data, int windowSize) {
         List<T> result = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
